@@ -1,5 +1,5 @@
 {
-	"name": "durable-chatroom",
+	"name": "durable-chatroom-room",
 	"description": "Chat with other users in real-time using Durable Objects and PartyKit.",
 	"cloudflare": {
 		"label": "Durable Chat App",
