@@ -1,44 +1,77 @@
 # Durable Chat App
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/durable-chat-template)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/RegisterMySite/chatroom)
 
 ![Template Preview](https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/da00d330-9a3b-40a2-e6df-b08813fb7200/public)
 
-<!-- dash-content-start -->
+# LiveChat UI Redesign — Integration Guide
 
-With this template, you can deploy your own chat app to converse with other users in real-time. Going to the [demo website](https://durable-chat-template.templates.workers.dev) puts you into a unique chat room based on the ID in the url. Share that ID with others to chat with them! This is powered by [Durable Objects](https://developers.cloudflare.com/durable-objects/) and [PartyKit](https://www.partykit.io/).
+This redesign turns the official Cloudflare `durable-chat-template` into a modern, polished real-time chat app with:
 
-## How It Works
+- Glassmorphic top navbar (logo, copyable room ID, profile dropdown)
+- Online users sidebar (desktop) / drawer (mobile)
+- Beautiful message bubbles with avatars + timestamps
+- Join modal for name + curated avatar picker
+- Dark mode by default + light mode toggle
+- Profile editing, room link copy, leave room
+- Smooth animations and fully responsive layout
 
-Users are assigned their own chat room when they first visit the page, and can talk to others by sharing their room URL. When someone joins the chat room, a WebSocket connection is opened with a [Durable Object](https://developers.cloudflare.com/durable-objects/) that stores and synchronizes the chat history.
+## Files to replace / add
 
-The Durable Object instance that manages the chat room runs in one location, and handles all incoming WebSocket connections. Chat messages are stored and retrieved using the [Durable Object SQL Storage API](https://developers.cloudflare.com/durable-objects/api/sql-storage/). When a new user joins the room, the existing chat history is retrieved from the Durable Object for that room. When a user sends a chat message, the message is stored in the Durable Object for that room and broadcast to all other users in that room via WebSocket connection. This template uses the [PartyKit Server API](https://docs.partykit.io/reference/partyserver-api/) to simplify the connection management logic, but could also be implemented using Durable Objects on their own.
-
-<!-- dash-content-end -->
-
-## Getting Started
-
-Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
+Copy these files into your project root (matching the official template structure):
 
 ```
-npm create cloudflare@latest -- --template=cloudflare/templates/durable-chat-template
+public/
+  index.html          ← replace
+  styles.css          ← replace (you can delete css/normalize.css + css/skeleton.css)
+
+src/
+  shared.ts           ← replace (extended types + avatars)
+  server/
+    index.ts          ← replace (presence + enriched messages)
+  client/
+    index.tsx         ← replace (full new UI)
 ```
 
-A live public deployment of this template is available at [https://durable-chat-template.templates.workers.dev](https://durable-chat-template.templates.workers.dev)
+## What changed on the server
 
-## Setup Steps
+- Extended `ChatMessage` with optional `avatar` and `timestamp`
+- New message types: `users`, `user-joined`, `user-left`, `identify`, `profile-update`
+- Connection state stores `{ name, avatar }`
+- `onConnect` sends history + current online users
+- `onClose` broadcasts leave events
+- Messages are enriched with the sender’s avatar before storage/broadcast
+- SQL schema now includes `avatar` and `timestamp` columns (with safe migration)
 
-1. Install the project dependencies with a package manager of your choice:
-   ```bash
-   npm install
-   ```
-2. Deploy the project!
-   ```bash
-   npx wrangler deploy
-   ```
-3. Monitor your worker
-   ```bash
-   npx wrangler tail
-   ```
-# chatroom
-# chatroom
+**Existing chat history continues to work.** Old messages without avatars simply fall back to a letter avatar.
+
+## Client features
+
+| Feature | Details |
+|---------|---------|
+| **Join flow** | Modal appears on first visit. Name + 16 DiceBear avatars. Identity saved in `localStorage`. |
+| **Navbar** | Logo · Room ID badge (click to copy) · Profile menu (edit / copy link / theme / leave) |
+| **Sidebar** | “Online now” list with avatars + green dots. Collapsible on mobile. |
+| **Messages** | Distinct self vs others bubbles, avatar, name, timestamp, auto-scroll, empty state. |
+| **Theme** | Dark default. Toggle persists in `localStorage` (`chat-theme`). |
+| **Footer** | Minimal “Powered by Cloudflare Durable Objects” + placeholder links. |
+
+## Running
+
+```bash
+npm install          # if needed
+npm run dev          # wrangler dev
+```
+
+The build command in `wrangler.json` already points at `src/client/index.tsx` — no change required.
+
+## Optional polish you can add later
+
+- Typing indicators (extend presence with a `typing` flag)
+- Message reactions
+- Markdown / link previews
+- Sound on new message
+- Emoji picker (the input bar is ready for it)
+
+Enjoy your production-ready LiveChat! 🚀
+
