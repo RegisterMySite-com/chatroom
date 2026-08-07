@@ -1,7 +1,7 @@
 {
 	"compatibility_date": "2026-8-08",
 	"main": "src/server/index.ts",
-	"name": "durable-chatroom-room",
+	"name": "chatroom",
 	"migrations": [
 		{
 			"new_sqlite_classes": ["Chat"],
